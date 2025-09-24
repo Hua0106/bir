@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生日快樂！</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: "Microsoft JhengHei", sans-serif;
+            overflow: hidden;
+            background: linear-gradient(135deg, #0d1b2a, #1b263b);
+            position: relative;
+            height: 100vh;
+        }
+
+        /* 星星背景固定 */
+        #stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: twinkle linear infinite;
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0.2;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.5);
+            }
+        }
+
+        /* 信封與卡片 */
+        .container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .envelope {
+            position: relative;
+            width: 80vw;
+            max-width: 350px;
+            aspect-ratio: 3 / 2;
+            background: #ff9aa2;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.6s;
+        }
+
+        .flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffb7b2;
+            clip-path: polygon(0 0, 100% 0, 50% 50%);
+            transform-origin: top;
+            transition: transform 0.6s;
+            z-index: 3;
+        }
+
+        .card {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 85%;
+            height: 75%;
+            background: #fff;
+            border-radius: 10px;
+            text-align: center;
+            padding: 5%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: opacity 0.6s;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            z-index: 2;
+        }
+
+        .card h1 {
+            font-size: clamp(18px, 5vw, 28px);
+            color: #ff6f61;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: clamp(14px, 4vw, 18px);
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .open .flap {
+            transform: rotateX(-180deg);
+        }
+
+        .open .card {
+            opacity: 1;
+        }
+
+        /* 氣球 */
+        #balloons {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .balloon {
+            position: absolute;
+            width: 30px;
+            height: 40px;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            bottom: -50px;
+            /* 起點在畫面底部 */
+            animation: floatBalloon linear forwards;
+        }
+
+        .balloon::after {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            background: #333;
+            left: 50%;
+            bottom: -20px;
+            transform: translateX(-50%);
+        }
+
+        @keyframes floatBalloon {
+            0% {
+                transform: translateY(0);
+            }
+
+            100% {
+                transform: translateY(-100vh);
+            }
+
+            /* 飄到畫面頂端 */
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 星星背景 -->
+    <div id="stars"></div>
+
+    <div class="container">
+        <div class="envelope" id="envelope">
+            <div class="flap"></div>
+            <div class="card">
+                <h1>萊恩~生日快樂</h1>
+                <p>
+                    0926 happy birthday！<br><br>
+                    謝謝你在我需要陪伴的時候出現，<br>
+                    而且二話不說地跑來台北找我，<br>
+                    帶我出去走走、晃晃～<br>
+                    之後也要繼續帶我出去唷！<br><br>
+                    雖然今年你逢 9 不能過生日，<br>
+                    那我就先祝你 <strong>30 歲快樂 🎂</strong>！<br>
+                    祝你每天都能天天開心，荷包滿滿 💖
+                </p>
+                <audio id="music" loop>
+                    <source src="https://www2.cs.uic.edu/~i101/SoundFiles/HappyBirthday.mid" type="audio/midi">
+                </audio>
+            </div>
+        </div>
+    </div>
+
+    <!-- 氣球容器 -->
+    <div id="balloons"></div>
+
+    <script>
+        const envelope = document.getElementById('envelope');
+        const music = document.getElementById('music');
+        const balloonsContainer = document.getElementById('balloons');
+        const starsContainer = document.getElementById('stars');
+
+        // 點開信封
+        envelope.addEventListener('click', () => {
+            envelope.classList.toggle('open');
+            if (envelope.classList.contains('open')) {
+                music.play();
+                createBalloons();
+            } else {
+                music.pause();
+                music.currentTime = 0;
+            }
+        });
+
+        // 產生氣球
+        function createBalloons() {
+            for (let i = 0; i < 10; i++) {
+                const balloon = document.createElement('div');
+                balloon.className = 'balloon';
+                balloon.style.backgroundColor = ['#ff6f61', '#ffb347', '#f7d794', '#6fcf97', '#56ccf2'][Math.floor(Math.random() * 5)];
+                balloon.style.left = Math.random() * window.innerWidth + 'px';
+                balloon.style.animationDuration = (5 + Math.random() * 5) + 's'; // 5~10秒
+                balloonsContainer.appendChild(balloon);
+                // 飄到頂端後自動移除
+                setTimeout(() => balloon.remove(), parseFloat(balloon.style.animationDuration) * 1000);
+            }
+        }
+
+        setInterval(() => {
+            if (envelope.classList.contains('open')) createBalloons();
+        }, 1500);
+
+        // 產生星星背景
+        function createStars() {
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * window.innerWidth + 'px';
+                star.style.top = Math.random() * window.innerHeight + 'px';
+                const size = Math.random() * 2 + 1;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.animationDuration = (2 + Math.random() * 3) + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        createStars();
+    </script>
+
+</body>
+
+</html>
